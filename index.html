@@ -1,156 +1,90 @@
-# CFD Human Source Calculator (PWA-ready)
-
-Сохранить как:
-
-```text
-index.html
-```
-
-```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#111111">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CFD Calculator</title>
 
 <style>
-*{
-    box-sizing:border-box;
-}
 
 body{
     margin:0;
-    padding:14px;
-    font-family:Arial, Helvetica, sans-serif;
+    padding:20px;
     background:#111;
-    color:#fff;
+    color:white;
+    font-family:Arial;
 }
 
 .wrapper{
-    max-width:900px;
+    max-width:800px;
     margin:auto;
 }
 
 .title{
     font-size:32px;
-    font-weight:bold;
-    margin-bottom:18px;
+    margin-bottom:20px;
     text-align:center;
-}
-
-.grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:16px;
+    font-weight:bold;
 }
 
 .card{
     background:#1d1d1d;
-    border-radius:18px;
-    padding:18px;
-    border:1px solid #333;
-    box-shadow:0 0 15px rgba(0,0,0,0.4);
-}
-
-.card-title{
-    font-size:22px;
-    margin-bottom:18px;
-    font-weight:bold;
+    padding:20px;
+    border-radius:20px;
+    margin-bottom:20px;
 }
 
 .field{
-    margin-bottom:18px;
+    margin-bottom:20px;
 }
 
 .label{
     margin-bottom:8px;
-    font-size:17px;
+    font-size:18px;
 }
 
-.control-row{
-    display:flex;
-    align-items:center;
-    gap:10px;
-}
-
-input,
-select{
+input, select{
     width:100%;
-    height:54px;
-    border-radius:12px;
+    height:55px;
     border:none;
-    outline:none;
+    border-radius:12px;
     background:#2b2b2b;
     color:white;
     font-size:24px;
-    font-weight:bold;
     text-align:center;
 }
 
-button.step{
-    width:52px;
-    min-width:52px;
-    height:52px;
-    border:none;
-    border-radius:12px;
-    background:#3b82f6;
-    color:white;
-    font-size:28px;
-    cursor:pointer;
-}
-
-button.calc{
+button{
     width:100%;
-    height:62px;
+    height:60px;
     border:none;
     border-radius:14px;
     background:#16a34a;
     color:white;
     font-size:24px;
-    font-weight:bold;
     cursor:pointer;
-    margin-top:10px;
 }
 
 .result{
     background:#2a2a2a;
-    border-radius:12px;
     padding:14px;
+    border-radius:12px;
     margin-bottom:12px;
 }
 
 .result-name{
     font-size:15px;
     opacity:0.8;
-    margin-bottom:5px;
 }
 
 .result-value{
-    font-size:28px;
+    font-size:30px;
     font-weight:bold;
 }
 
-@media(max-width:780px){
-
-    .grid{
-        grid-template-columns:1fr;
-    }
-
-    .title{
-        font-size:26px;
-    }
-
-    input,
-    select{
-        font-size:22px;
-    }
-}
 </style>
 </head>
+
 <body>
 
 <div class="wrapper">
@@ -159,98 +93,40 @@ button.calc{
 Человек как источник тепла и CO₂
 </div>
 
-<div class="grid">
-
 <div class="card">
-<div class="card-title">Исходные данные</div>
 
 <div class="field">
 <div class="label">Масса (кг)</div>
-<div class="control-row">
-<button class="step" onclick="step('mass',-1)">−</button>
 <input id="mass" value="75">
-<button class="step" onclick="step('mass',1)">+</button>
-</div>
 </div>
 
 <div class="field">
 <div class="label">Рост (см)</div>
-<div class="control-row">
-<button class="step" onclick="step('height',-1)">−</button>
 <input id="height" value="175">
-<button class="step" onclick="step('height',1)">+</button>
-</div>
-</div>
-
-<div class="field">
-<div class="label">Активность</div>
-<select id="activity" onchange="updateMET()">
-<option value="1.2">Сидит</option>
-<option value="1.6" selected>Лёгкая работа</option>
-<option value="2.5">Ходьба</option>
-<option value="4.0">Физическая работа</option>
-<option value="6.0">Интенсивная нагрузка</option>
-<option value="manual">Ручной ввод</option>
-</select>
 </div>
 
 <div class="field">
 <div class="label">MET</div>
-<div class="control-row">
-<button class="step" onclick="step('met',-0.1)">−</button>
 <input id="met" value="1.6">
-<button class="step" onclick="step('met',0.1)">+</button>
-</div>
 </div>
 
 <div class="field">
 <div class="label">Температура воздуха (°C)</div>
-<div class="control-row">
-<button class="step" onclick="step('temp',-1)">−</button>
 <input id="temp" value="24">
-<button class="step" onclick="step('temp',1)">+</button>
-</div>
 </div>
 
 <div class="field">
 <div class="label">Влажность (%)</div>
-<div class="control-row">
-<button class="step" onclick="step('rh',-1)">−</button>
 <input id="rh" value="50">
-<button class="step" onclick="step('rh',1)">+</button>
-</div>
 </div>
 
-<div class="field">
-<div class="label">Одежда CLO</div>
-<select id="clo">
-<option value="0.3">0.3 — Лёгкая</option>
-<option value="0.5" selected>0.5 — Обычная</option>
-<option value="1.0">1.0 — Тёплая</option>
-</select>
-</div>
-
-<div class="field">
-<div class="label">RQ</div>
-<select id="rq_mode">
-<option value="auto" selected>Автоматически</option>
-<option value="manual">Ручной ввод</option>
-</select>
-</div>
-
-<div class="field">
-<div class="label">RQ вручную</div>
-<input id="rq_manual" value="0.85">
-</div>
-
-<button class="calc" onclick="calc()">
+<button onclick="calc()">
 Рассчитать
 </button>
 
 </div>
 
 <div class="card">
-<div class="card-title">Результаты</div>
 
 <div class="result">
 <div class="result-name">Площадь тела (м²)</div>
@@ -283,10 +159,13 @@ button.calc{
 </div>
 
 <div class="result">
-<div class="result-name">Влаговыделение (г/ч)</div>
-<div class="result-value" id="H2O_gh">0</div>
+<div class="result-name">CO₂ (кг/с)</div>
+<div class="result-value" id="co2_kgs">0</div>
 </div>
 
+<div class="result">
+<div class="result-name">Влаговыделение (г/ч)</div>
+<div class="result-value" id="H2O_gh">0</div>
 </div>
 
 </div>
@@ -297,29 +176,8 @@ button.calc{
 
 function val(id, def){
     let v = document.getElementById(id).value;
-    v = String(v).replace(',', '.');
     v = parseFloat(v);
     return isNaN(v) ? def : v;
-}
-
-function step(id, dv){
-    let el = document.getElementById(id);
-    let v = val(id,0);
-    el.value = Math.round((v + dv) * 100) / 100;
-}
-
-function updateMET(){
-
-    const activity = document.getElementById('activity').value;
-    const met = document.getElementById('met');
-
-    if(activity === 'manual'){
-        met.disabled = false;
-    }
-    else{
-        met.disabled = true;
-        met.value = activity;
-    }
 }
 
 function setOut(id,val,fix){
@@ -334,21 +192,6 @@ function calc(){
     let T   = val('temp',24);
     let RH  = val('rh',50);
 
-    let clo = parseFloat(document.getElementById('clo').value) || 0.5;
-
-    let rq_mode = document.getElementById('rq_mode').value;
-    let RQ;
-
-    if(rq_mode === 'manual'){
-        RQ = val('rq_manual',0.85);
-    }
-    else{
-        if(MET <= 1.5) RQ = 0.85;
-        else if(MET <= 3) RQ = 0.9;
-        else if(MET <= 5) RQ = 0.95;
-        else RQ = 1.0;
-    }
-
     let A = 0.007184 * Math.pow(m,0.425) * Math.pow(h,0.725);
 
     let M = MET * 58.2 * A;
@@ -358,11 +201,7 @@ function calc(){
 
     let evap = 1 - Pv / Psat;
 
-    if(evap < 0) evap = 0;
-
-    let sens = 0.75 - (T - 20) * 0.03 - clo * 0.1;
-
-    sens = Math.max(0.25, Math.min(0.75, sens));
+    let sens = 0.65;
 
     let Q_lat = M * (1 - sens) * evap;
     let Q_sens = M - Q_lat;
@@ -370,7 +209,7 @@ function calc(){
     let H2O = Q_lat / 2450000;
 
     let VO2 = (3.5 * MET * m) / 1000 / 60;
-    let VCO2 = VO2 * RQ;
+    let VCO2 = VO2 * 0.85;
     let CO2 = VCO2 * 1.977 / 1000;
 
     setOut('A_out',A,2);
@@ -379,41 +218,14 @@ function calc(){
     setOut('Q_lat',Q_lat,0);
     setOut('co2_lh',VCO2 * 3600,1);
     setOut('co2_kgh',CO2 * 3600,4);
+    setOut('co2_kgs',CO2,6);
     setOut('H2O_gh',H2O * 3600 * 1000,1);
+
 }
 
-updateMET();
 calc();
 
 </script>
 
 </body>
 </html>
-```
-
----
-
-# Как установить на iPhone
-
-1. Залить файл на сайт.
-2. Открыть в Safari.
-3. Нажать:
-
-```text
-Поделиться → На экран «Домой»
-```
-
-После этого калькулятор будет работать как приложение iPhone.
-
----
-
-# Что уже сделано
-
-* адаптация под iPhone;
-* большие touch-кнопки;
-* мобильная верстка;
-* fullscreen стиль;
-* тёмная тема;
-* поддержка PWA;
-* быстрый интерфейс;
-* сохранена вся логика HTA.
