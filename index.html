@@ -1,37 +1,60 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CFD Calculator</title>
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#111111">
+
+<title>CFD Human Calculator</title>
 
 <style>
 
+*{
+    box-sizing:border-box;
+}
+
 body{
     margin:0;
-    padding:20px;
+    padding:16px;
     background:#111;
     color:white;
-    font-family:Arial;
+    font-family:Arial, Helvetica, sans-serif;
 }
 
 .wrapper{
-    max-width:800px;
+    max-width:900px;
     margin:auto;
 }
 
 .title{
-    font-size:32px;
-    margin-bottom:20px;
     text-align:center;
+    font-size:34px;
     font-weight:bold;
+    margin-bottom:20px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
 }
 
 .card{
     background:#1d1d1d;
-    padding:20px;
     border-radius:20px;
+    padding:20px;
+    border:1px solid #333;
+    box-shadow:0 0 20px rgba(0,0,0,0.4);
+}
+
+.card-title{
+    font-size:24px;
     margin-bottom:20px;
+    font-weight:bold;
 }
 
 .field{
@@ -43,43 +66,78 @@ body{
     font-size:18px;
 }
 
-input, select{
+.control-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+input,
+select{
     width:100%;
-    height:55px;
+    height:58px;
     border:none;
-    border-radius:12px;
+    border-radius:14px;
     background:#2b2b2b;
     color:white;
     font-size:24px;
     text-align:center;
+    outline:none;
 }
 
-button{
-    width:100%;
-    height:60px;
+.step{
+    width:58px;
+    min-width:58px;
+    height:58px;
     border:none;
     border-radius:14px;
+    background:#3b82f6;
+    color:white;
+    font-size:30px;
+    cursor:pointer;
+}
+
+.calc{
+    width:100%;
+    height:64px;
+    border:none;
+    border-radius:16px;
     background:#16a34a;
     color:white;
-    font-size:24px;
+    font-size:26px;
+    font-weight:bold;
     cursor:pointer;
+    margin-top:10px;
 }
 
 .result{
     background:#2a2a2a;
+    border-radius:14px;
     padding:14px;
-    border-radius:12px;
     margin-bottom:12px;
 }
 
 .result-name{
     font-size:15px;
     opacity:0.8;
+    margin-bottom:4px;
 }
 
 .result-value{
     font-size:30px;
     font-weight:bold;
+}
+
+@media(max-width:800px){
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .title{
+        font-size:28px;
+    }
+
 }
 
 </style>
@@ -93,34 +151,86 @@ button{
 Человек как источник тепла и CO₂
 </div>
 
+<div class="grid">
+
 <div class="card">
+
+<div class="card-title">
+Исходные данные
+</div>
 
 <div class="field">
 <div class="label">Масса (кг)</div>
+
+<div class="control-row">
+<button class="step"
+onclick="step('mass',-1)">−</button>
+
 <input id="mass" value="75">
+
+<button class="step"
+onclick="step('mass',1)">+</button>
+</div>
 </div>
 
 <div class="field">
 <div class="label">Рост (см)</div>
+
+<div class="control-row">
+<button class="step"
+onclick="step('height',-1)">−</button>
+
 <input id="height" value="175">
+
+<button class="step"
+onclick="step('height',1)">+</button>
+</div>
 </div>
 
 <div class="field">
 <div class="label">MET</div>
+
+<div class="control-row">
+<button class="step"
+onclick="step('met',-0.1)">−</button>
+
 <input id="met" value="1.6">
+
+<button class="step"
+onclick="step('met',0.1)">+</button>
+</div>
 </div>
 
 <div class="field">
 <div class="label">Температура воздуха (°C)</div>
+
+<div class="control-row">
+<button class="step"
+onclick="step('temp',-1)">−</button>
+
 <input id="temp" value="24">
+
+<button class="step"
+onclick="step('temp',1)">+</button>
+</div>
 </div>
 
 <div class="field">
 <div class="label">Влажность (%)</div>
+
+<div class="control-row">
+<button class="step"
+onclick="step('rh',-1)">−</button>
+
 <input id="rh" value="50">
+
+<button class="step"
+onclick="step('rh',1)">+</button>
+</div>
 </div>
 
-<button onclick="calc()">
+<button class="calc"
+onclick="calc()">
 Рассчитать
 </button>
 
@@ -128,44 +238,82 @@ button{
 
 <div class="card">
 
-<div class="result">
-<div class="result-name">Площадь тела (м²)</div>
-<div class="result-value" id="A_out">0</div>
+<div class="card-title">
+Результаты
 </div>
 
 <div class="result">
-<div class="result-name">Полная тепловая мощность (Вт)</div>
-<div class="result-value" id="Q_total">0</div>
+<div class="result-name">
+Площадь тела (м²)
+</div>
+
+<div class="result-value"
+id="A_out">0</div>
 </div>
 
 <div class="result">
-<div class="result-name">Явное тепло (Вт)</div>
-<div class="result-value" id="Q_sens">0</div>
+<div class="result-name">
+Полная тепловая мощность (Вт)
+</div>
+
+<div class="result-value"
+id="Q_total">0</div>
 </div>
 
 <div class="result">
-<div class="result-name">Скрытое тепло (Вт)</div>
-<div class="result-value" id="Q_lat">0</div>
+<div class="result-name">
+Явное тепло (Вт)
+</div>
+
+<div class="result-value"
+id="Q_sens">0</div>
 </div>
 
 <div class="result">
-<div class="result-name">CO₂ (л/ч)</div>
-<div class="result-value" id="co2_lh">0</div>
+<div class="result-name">
+Скрытое тепло (Вт)
+</div>
+
+<div class="result-value"
+id="Q_lat">0</div>
 </div>
 
 <div class="result">
-<div class="result-name">CO₂ (кг/ч)</div>
-<div class="result-value" id="co2_kgh">0</div>
+<div class="result-name">
+CO₂ (л/ч)
+</div>
+
+<div class="result-value"
+id="co2_lh">0</div>
 </div>
 
 <div class="result">
-<div class="result-name">CO₂ (кг/с)</div>
-<div class="result-value" id="co2_kgs">0</div>
+<div class="result-name">
+CO₂ (кг/ч)
+</div>
+
+<div class="result-value"
+id="co2_kgh">0</div>
 </div>
 
 <div class="result">
-<div class="result-name">Влаговыделение (г/ч)</div>
-<div class="result-value" id="H2O_gh">0</div>
+<div class="result-name">
+CO₂ (кг/с)
+</div>
+
+<div class="result-value"
+id="co2_kgs">0</div>
+</div>
+
+<div class="result">
+<div class="result-name">
+Влаговыделение (г/ч)
+</div>
+
+<div class="result-value"
+id="H2O_gh">0</div>
+</div>
+
 </div>
 
 </div>
@@ -175,13 +323,38 @@ button{
 <script>
 
 function val(id, def){
-    let v = document.getElementById(id).value;
+
+    let v =
+    document.getElementById(id).value;
+
+    v = String(v).replace(',','.');
+
     v = parseFloat(v);
+
     return isNaN(v) ? def : v;
 }
 
+function step(id,delta){
+
+    let el =
+    document.getElementById(id);
+
+    let v = val(id,0);
+
+    v += delta;
+
+    v = Math.round(v * 100) / 100;
+
+    el.value = v;
+
+    calc();
+}
+
 function setOut(id,val,fix){
-    document.getElementById(id).innerHTML = Number(val).toFixed(fix);
+
+    document.getElementById(id)
+    .innerHTML =
+    Number(val).toFixed(fix);
 }
 
 function calc(){
@@ -192,34 +365,70 @@ function calc(){
     let T   = val('temp',24);
     let RH  = val('rh',50);
 
-    let A = 0.007184 * Math.pow(m,0.425) * Math.pow(h,0.725);
+    let A =
+    0.007184 *
+    Math.pow(m,0.425) *
+    Math.pow(h,0.725);
 
-    let M = MET * 58.2 * A;
+    let M =
+    MET * 58.2 * A;
 
-    let Psat = 610.78 * Math.exp((17.27 * T) / (T + 237.3));
-    let Pv = Psat * RH / 100;
+    let Psat =
+    610.78 *
+    Math.exp(
+        (17.27 * T) /
+        (T + 237.3)
+    );
 
-    let evap = 1 - Pv / Psat;
+    let Pv =
+    Psat * RH / 100;
+
+    let evap =
+    1 - Pv / Psat;
+
+    evap =
+    Math.max(0,evap);
 
     let sens = 0.65;
 
-    let Q_lat = M * (1 - sens) * evap;
-    let Q_sens = M - Q_lat;
+    let Q_lat =
+    M * (1 - sens) * evap;
 
-    let H2O = Q_lat / 2450000;
+    let Q_sens =
+    M - Q_lat;
 
-    let VO2 = (3.5 * MET * m) / 1000 / 60;
-    let VCO2 = VO2 * 0.85;
-    let CO2 = VCO2 * 1.977 / 1000;
+    let H2O =
+    Q_lat / 2450000;
+
+    let VO2 =
+    (3.5 * MET * m) /
+    1000 / 60;
+
+    let VCO2 =
+    VO2 * 0.85;
+
+    let CO2 =
+    VCO2 * 1.977 / 1000;
 
     setOut('A_out',A,2);
+
     setOut('Q_total',M,0);
+
     setOut('Q_sens',Q_sens,0);
+
     setOut('Q_lat',Q_lat,0);
-    setOut('co2_lh',VCO2 * 3600,1);
-    setOut('co2_kgh',CO2 * 3600,4);
-    setOut('co2_kgs',CO2,6);
-    setOut('H2O_gh',H2O * 3600 * 1000,1);
+
+    setOut('co2_lh',
+    VCO2 * 3600,1);
+
+    setOut('co2_kgh',
+    CO2 * 3600,4);
+
+    setOut('co2_kgs',
+    CO2,6);
+
+    setOut('H2O_gh',
+    H2O * 3600 * 1000,1);
 
 }
 
