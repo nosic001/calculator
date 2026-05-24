@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+
+<title>Interval Timer</title>
+
+<style>
+
+:root{
+    --bg:#0f1115;
+    --panel:#1a1f27;
+    --panel2:#222933;
+
+    --text:#ffffff;
+    --muted:#9aa4b2;
+
+    --work:#ff5c5c;
+    --rest:#4caf50;
+
+    --radius:22px;
+}
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    height:100vh;
+    overflow:hidden;
+}
+
+.app{
+    display:flex;
+    height:100vh;
+}
+
+/* =========================
+   LEFT PANEL
+========================= */
+
+.sidebar{
+    width:420px;
+    background:var(--panel);
+    padding:24px;
+    overflow:auto;
+    border-right:1px solid #2c3440;
+}
+
+.sidebar h1{
+    font-size:28px;
+    margin-bottom:24px;
+}
+
+.interval-list{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+}
+
+.interval-card{
+    background:var(--panel2);
+    border-radius:18px;
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.interval-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.type{
+    padding:6px 12px;
+    border-radius:12px;
+    font-weight:bold;
+    font-size:14px;
+}
+
+.type.work{
+    background:var(--work);
+}
+
+.type.rest{
+    background:var(--rest);
+}
+
+.remove-btn{
+    border:none;
+    background:#444;
+    color:white;
+    width:32px;
+    height:32px;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:18px;
+}
+
+.interval-card input{
+    width:100%;
+    background:#11151b;
+    border:none;
+    color:white;
+    padding:12px;
+    border-radius:12px;
+    font-size:16px;
+}
+
+.time-row{
+    display:flex;
+    gap:10px;
+}
+
+.time-row input{
+    text-align:center;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.buttons-row{
+    display:flex;
+    gap:12px;
+    margin-top:20px;
+}
+
+.add-btn{
+    flex:1;
+    border:none;
+    border-radius:16px;
+    padding:16px;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.work-btn{
+    background:var(--work);
+}
+
+.rest-btn{
+    background:var(--rest);
+}
+
+/* =========================
+   TIMER AREA
+========================= */
+
+.main{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    transition:0.3s;
+}
+
+.phase{
+    font-size:28px;
+    color:var(--muted);
+    margin-bottom:16px;
+}
+
+.interval-title{
+    font-size:36px;
+    margin-bottom:30px;
+    text-align:center;
+}
+
+.timer{
+    font-size:140px;
+    font-weight:bold;
+    line-height:1;
+}
+
+.progress-ring{
+    position:absolute;
+    width:420px;
+    height:420px;
+}
+
+svg{
+    width:100%;
+    height:100%;
+    transform:rotate(-90deg);
+}
+
+circle{
+    fill:none;
+    stroke-width:14;
+}
+
+.bg-ring{
+    stroke:#2d3642;
+}
+
+.progress{
+    stroke:var(--work);
+    stroke-linecap:round;
+    transition:stroke 0.3s;
+}
+
+/* =========================
+   CONTROLS
+========================= */
+
+.controls{
+    position:absolute;
+    bottom:40px;
+    display:flex;
+    gap:16px;
+}
+
+.control-btn{
+    border:none;
+    padding:18px 28px;
+    border-radius:18px;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+    background:#2a3442;
+    color:white;
+}
+
+.control-btn:hover{
+    opacity:0.9;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:1000px){
+
+    body{
+        overflow:auto;
+    }
+
+    .app{
+        flex-direction:column;
+        height:auto;
+    }
+
+    .sidebar{
+        width:100%;
+        border-right:none;
+        border-bottom:1px solid #2c3440;
+    }
+
+    .main{
+        min-height:100vh;
+        padding:40px 20px 140px;
+    }
+
+    .timer{
+        font-size:90px;
+    }
+
+    .progress-ring{
+        width:300px;
+        height:300px;
+    }
+
+    .controls{
+        flex-wrap:wrap;
+        justify-content:center;
+        padding:0 20px;
+    }
+}
+
+</style>
+</head>
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+
+    <div class="sidebar">
+
+        <h1>Интервалы</h1>
+
+        <div class="interval-list" id="intervalList"></div>
+
+        <div class="buttons-row">
+            <button class="add-btn work-btn" onclick="addInterval('work')">
+                + Работа
+            </button>
+
+            <button class="add-btn rest-btn" onclick="addInterval('rest')">
+                + Отдых
+            </button>
+        </div>
+
+    </div>
+
+    <!-- MAIN -->
+
+    <div class="main" id="main">
+
+        <div class="progress-ring">
+
+            <svg viewBox="0 0 200 200">
+
+                <circle
+                    class="bg-ring"
+                    cx="100"
+                    cy="100"
+                    r="84"
+                ></circle>
+
+                <circle
+                    class="progress"
+                    id="progressCircle"
+                    cx="100"
+                    cy="100"
+                    r="84"
+                    stroke-dasharray="528"
+                    stroke-dashoffset="0"
+                ></circle>
+
+            </svg>
+
+        </div>
+
+        <div class="phase" id="phase">
+            READY
+        </div>
+
+        <div class="interval-title" id="intervalTitle">
+            Интервальный таймер
+        </div>
+
+        <div class="timer" id="timer">
+            00:00
+        </div>
+
+        <div class="controls">
+
+            <button class="control-btn" onclick="startTimer()">
+                START
+            </button>
+
+            <button class="control-btn" onclick="pauseTimer()">
+                PAUSE
+            </button>
+
+            <button class="control-btn" onclick="nextInterval()">
+                NEXT
+            </button>
+
+            <button class="control-btn" onclick="resetTimer()">
+                RESET
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+/* ====================================
+   DATA
+==================================== */
+
+let intervals = [
+
+    {
+        id:Date.now(),
+        type:"work",
+        title:"Работа",
+        minutes:0,
+        seconds:45
+    },
+
+    {
+        id:Date.now()+1,
+        type:"rest",
+        title:"Отдых",
+        minutes:0,
+        seconds:15
+    }
+
+];
+
+let currentIndex = 0;
+
+let timerRunning = false;
+let paused = false;
+
+let endTime = 0;
+let remaining = 0;
+
+let animationFrame = null;
+
+/* ====================================
+   INIT
+==================================== */
+
+renderIntervals();
+updateMainDisplay();
+
+/* ====================================
+   RENDER
+==================================== */
+
+function renderIntervals(){
+
+    const list = document.getElementById("intervalList");
+
+    list.innerHTML = "";
+
+    intervals.forEach((item,index)=>{
+
+        const card = document.createElement("div");
+        card.className = "interval-card";
+
+        card.innerHTML = `
+
+            <div class="interval-top">
+
+                <div class="type ${item.type}">
+                    ${item.type === "work" ? "WORK" : "REST"}
+                </div>
+
+                <button class="remove-btn"
+                    onclick="removeInterval(${item.id})">
+                    ×
+                </button>
+
+            </div>
+
+            <input
+                value="${item.title}"
+                onchange="updateTitle(${item.id}, this.value)"
+            >
+
+            <div class="time-row">
+
+                <input
+                    type="number"
+                    min="0"
+                    value="${item.minutes}"
+                    onchange="updateMinutes(${item.id}, this.value)"
+                >
+
+                <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value="${item.seconds}"
+                    onchange="updateSeconds(${item.id}, this.value)"
+                >
+
+            </div>
+
+        `;
+
+        list.appendChild(card);
+
+    });
+
+}
+
+/* ====================================
+   INTERVAL MANAGEMENT
+==================================== */
+
+function addInterval(type){
+
+    intervals.push({
+
+        id:Date.now() + Math.random(),
+
+        type:type,
+
+        title:type === "work"
+            ? "Работа"
+            : "Отдых",
+
+        minutes:0,
+
+        seconds:type === "work"
+            ? 45
+            : 15
+    });
+
+    renderIntervals();
+
+}
+
+function removeInterval(id){
+
+    intervals = intervals.filter(i=>i.id !== id);
+
+    renderIntervals();
+
+}
+
+function updateTitle(id,value){
+
+    const item = intervals.find(i=>i.id===id);
+
+    item.title = value;
+
+    updateMainDisplay();
+
+}
+
+function updateMinutes(id,value){
+
+    const item = intervals.find(i=>i.id===id);
+
+    item.minutes = parseInt(value) || 0;
+
+}
+
+function updateSeconds(id,value){
+
+    const item = intervals.find(i=>i.id===id);
+
+    item.seconds = parseInt(value) || 0;
+
+}
+
+/* ====================================
+   TIMER
+==================================== */
+
+function startTimer(){
+
+    if(intervals.length === 0) return;
+
+    if(paused){
+
+        endTime = Date.now() + remaining;
+
+        paused = false;
+
+    }else{
+
+        startCurrentInterval();
+
+    }
+
+    timerRunning = true;
+
+    updateLoop();
+
+}
+
+function startCurrentInterval(){
+
+    const current = intervals[currentIndex];
+
+    const duration =
+        (current.minutes * 60 + current.seconds) * 1000;
+
+    endTime = Date.now() + duration;
+
+}
+
+function updateLoop(){
+
+    if(!timerRunning) return;
+
+    const current = intervals[currentIndex];
+
+    if(!current) return;
+
+    remaining = endTime - Date.now();
+
+    if(remaining <= 0){
+
+        playBeep();
+
+        currentIndex++;
+
+        if(currentIndex >= intervals.length){
+
+            finishTimer();
+            return;
+        }
+
+        startCurrentInterval();
+
+    }
+
+    updateMainDisplay();
+
+    animationFrame = requestAnimationFrame(updateLoop);
+
+}
+
+function pauseTimer(){
+
+    timerRunning = false;
+    paused = true;
+
+    cancelAnimationFrame(animationFrame);
+
+}
+
+function nextInterval(){
+
+    playBeep();
+
+    currentIndex++;
+
+    if(currentIndex >= intervals.length){
+
+        finishTimer();
+        return;
+    }
+
+    startCurrentInterval();
+
+}
+
+function resetTimer(){
+
+    timerRunning = false;
+    paused = false;
+
+    cancelAnimationFrame(animationFrame);
+
+    currentIndex = 0;
+
+    remaining = 0;
+
+    updateMainDisplay();
+
+}
+
+function finishTimer(){
+
+    timerRunning = false;
+
+    cancelAnimationFrame(animationFrame);
+
+    document.getElementById("phase").innerText = "DONE";
+
+    document.getElementById("timer").innerText = "00:00";
+
+    document.getElementById("intervalTitle").innerText =
+        "Тренировка завершена";
+
+    playLongBeep();
+
+}
+
+/* ====================================
+   UI UPDATE
+==================================== */
+
+function updateMainDisplay(){
+
+    const current = intervals[currentIndex];
+
+    if(!current){
+
+        document.getElementById("timer").innerText = "00:00";
+        return;
+    }
+
+    const total =
+        current.minutes * 60 + current.seconds;
+
+    let secondsLeft;
+
+    if(timerRunning || paused){
+
+        secondsLeft = Math.ceil(remaining / 1000);
+
+    }else{
+
+        secondsLeft = total;
+
+    }
+
+    if(secondsLeft < 0) secondsLeft = 0;
+
+    const mm = String(Math.floor(secondsLeft / 60))
+        .padStart(2,"0");
+
+    const ss = String(secondsLeft % 60)
+        .padStart(2,"0");
+
+    document.getElementById("timer").innerText =
+        `${mm}:${ss}`;
+
+    document.getElementById("intervalTitle").innerText =
+        current.title;
+
+    document.getElementById("phase").innerText =
+        current.type.toUpperCase();
+
+    const main = document.getElementById("main");
+
+    if(current.type === "work"){
+
+        main.style.background = "#241616";
+
+    }else{
+
+        main.style.background = "#162419";
+
+    }
+
+    const circle = document.getElementById("progressCircle");
+
+    const radius = 84;
+
+    const circumference = 2 * Math.PI * radius;
+
+    const progress =
+        secondsLeft / total;
+
+    const offset =
+        circumference * (1 - progress);
+
+    circle.style.strokeDasharray = circumference;
+
+    circle.style.strokeDashoffset = offset;
+
+    circle.style.stroke =
+        current.type === "work"
+        ? "#ff5c5c"
+        : "#4caf50";
+
+}
+
+/* ====================================
+   AUDIO
+==================================== */
+
+const audioCtx =
+    new (window.AudioContext || window.webkitAudioContext)();
+
+function playBeep(){
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.frequency.value = 700;
+
+    gain.gain.value = 0.05;
+
+    osc.start();
+
+    osc.stop(audioCtx.currentTime + 0.15);
+
+}
+
+function playLongBeep(){
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.frequency.value = 350;
+
+    gain.gain.value = 0.08;
+
+    osc.start();
+
+    osc.stop(audioCtx.currentTime + 1);
+
+}
+
+</script>
+
+</body>
+</html>
